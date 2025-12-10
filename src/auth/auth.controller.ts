@@ -11,30 +11,36 @@ export class AuthController {
   register(@Body() user: UserDto) {
     // const data = this.authservice.register(user);
     // console.log(user);
-    
-    // return { 
+
+    // return {
     //     users: user,
     //     isloged: data
     // };
     // localStorage.setItem('isloged', JSON.stringify(true))
 
-    return this.authservice.register(user)
+    return this.authservice.register(user);
   }
 
   @Post('logout')
-  logout(@Body() user: {Username: string}) { 
+  logout(@Body() user: { Username: string }) {
     return this.authservice.logout(user);
   }
 
   @Post('login')
-  login(@Body() user: {username: string, password: string}) {
+  login(@Body() user: { username: string; password: string }) {
     return this.authservice.login(user);
   }
-
+ 
   @Post('user')
   @UseGuards(AuthGuard())
-  getuserName(@Body() id: string){
-    return this.authservice.getuserName(id)
+  getuserName(@Body() id: string) {
+    return this.authservice.getuserName(id);
   }
 
+  @Post('refresh')
+  refreshToken(@Body() token: { token: string }) {
+    console.log(token.token);
+
+    return this.authservice.refreshToken(token.token)
+  }
 }

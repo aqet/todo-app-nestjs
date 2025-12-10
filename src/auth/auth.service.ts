@@ -5,10 +5,16 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-
+import { RefreshToken } from './schema/refresh-token.schemas';
+import { randomUUID } from 'crypto';
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private UserModel: Model<User>, private jwtService: JwtService) {}
+  constructor(
+    @InjectModel(User.name) private UserModel: Model<User>,
+    @InjectModel(RefreshToken.name)
+    private RefreshTokenModel: Model<RefreshToken>,
+    private jwtService: JwtService,
+  ) {}
   user: UserDto[] = [];
 
   async register(user: UserDto) {
@@ -17,9 +23,27 @@ export class AuthService {
     const newUser = new this.UserModel(user);
     const myUser = await newUser.save();
 
-    const token = this.jwtService.sign({ Username: myUser.Username, isLogged: myUser.isLogged, id: myUser?.id });
+    const token = this.jwtService.sign({
+      Username: myUser.Username,
+      isLogged: myUser.isLogged,
+      id: myUser?.id,
+    });
+
+    const RefreshToken = randomUUID();
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 3);
+
+    await this.RefreshTokenModel.create(
+      Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }),
+    );
+
     // this.user.push(user)
-    return { token , Username: myUser.Username, isLogged: myUser.isLogged}
+    return {
+      token,
+      Username: myUser.Username,
+      isLogged: myUser.isLogged,
+      RefreshToken,
+    };
   }
 
   async logout(user: any) {
@@ -31,7 +55,9 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const userFound = await this.UserModel.findOne({ Username: user.Username }).select('+password');
+    const userFound = await this.UserModel.findOne({
+      Username: user.Username,
+    }).select('+password');
 
     if (!userFound) throw new UnauthorizedException('Utilisateur introuvable');
 
@@ -40,7 +66,8 @@ export class AuthService {
       userFound.password,
     );
 
-    if (!passwordValid) throw new UnauthorizedException('Mot de passe incorrect');
+    if (!passwordValid)
+      throw new UnauthorizedException('Mot de passe incorrect');
 
     const myUser = await this.UserModel.findOneAndUpdate(
       { Username: user.Username },
@@ -48,13 +75,58 @@ export class AuthService {
       { new: true },
     );
 
-    const token = this.jwtService.sign({ Username: myUser?.Username, isLogged: myUser?.isLogged, id: myUser?.id });
+    const token = this.jwtService.sign({
+      Username: myUser?.Username,
+      isLogged: myUser?.isLogged,
+      id: myUser?.id,
+    });
+
+    const RefreshToken = randomUUID();
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 3);
+
+    await this.RefreshTokenModel.create(
+      Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }),
+    );
     // this.user.push(user)
-    return { token , Username: myUser?.Username, isLogged: myUser?.isLogged}
+    return {
+      token,
+      Username: myUser?.Username,
+      isLogged: myUser?.isLogged,
+      RefreshToken,
+    };
   }
 
-  async getuserName(id: any){
-    
-    return await this.UserModel.findById(id.id).select("Username");
+  async getuserName(id: any) {
+    return await this.UserModel.findById(id.id).select('Username');
+  }
+
+  async refreshToken(refreshToken: string) {
+    const refresh = await this.RefreshTokenModel.findOneAndDelete({
+      RefreshToken: refreshToken,
+      expiryDate: { $gte: new Date() },
+    });
+
+    if (!refresh) throw new UnauthorizedException('refresh token is invalid');
+
+    const myUser = await this.UserModel.findOne({
+      _id: refresh.userId,
+    });
+
+    const token = this.jwtService.sign({
+      Username: myUser?.Username,
+      isLogged: myUser?.isLogged,
+      id: myUser?.id,
+    });
+
+    const RefreshToken = randomUUID();
+    const expiryDate = new Date();
+    expiryDate.setMinutes(expiryDate.getDate() + 5);
+
+    await this.RefreshTokenModel.create(
+      Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }),
+    );
+
+    return { token, RefreshToken };
   }
 }

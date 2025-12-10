@@ -52,11 +52,15 @@ const mongoose_1 = require("mongoose");
 const mongoose_2 = require("@nestjs/mongoose");
 const bcrypt = __importStar(require("bcrypt"));
 const jwt_1 = require("@nestjs/jwt");
+const refresh_token_schemas_1 = require("./schema/refresh-token.schemas");
+const crypto_1 = require("crypto");
 let AuthService = class AuthService {
     UserModel;
+    RefreshTokenModel;
     jwtService;
-    constructor(UserModel, jwtService) {
+    constructor(UserModel, RefreshTokenModel, jwtService) {
         this.UserModel = UserModel;
+        this.RefreshTokenModel = RefreshTokenModel;
         this.jwtService = jwtService;
     }
     user = [];
@@ -65,31 +69,83 @@ let AuthService = class AuthService {
         user.password = await bcrypt.hash(user.password, salt);
         const newUser = new this.UserModel(user);
         const myUser = await newUser.save();
-        const token = this.jwtService.sign({ Username: myUser.Username, isLogged: myUser.isLogged, id: myUser?.id });
-        return { token, Username: myUser.Username, isLogged: myUser.isLogged };
+        const token = this.jwtService.sign({
+            Username: myUser.Username,
+            isLogged: myUser.isLogged,
+            id: myUser?.id,
+        });
+        const RefreshToken = (0, crypto_1.randomUUID)();
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 3);
+        await this.RefreshTokenModel.create(Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }));
+        return {
+            token,
+            Username: myUser.Username,
+            isLogged: myUser.isLogged,
+            RefreshToken,
+        };
     }
     async logout(user) {
         return await this.UserModel.findOneAndUpdate({ Username: user.Username }, { $set: { isLogged: false } }, { new: true });
     }
     async login(user) {
-        const userFound = await this.UserModel.findOne({ Username: user.Username }).select('+password');
+        const userFound = await this.UserModel.findOne({
+            Username: user.Username,
+        }).select('+password');
         if (!userFound)
             throw new common_1.UnauthorizedException('Utilisateur introuvable');
         const passwordValid = await bcrypt.compare(user.password, userFound.password);
         if (!passwordValid)
             throw new common_1.UnauthorizedException('Mot de passe incorrect');
         const myUser = await this.UserModel.findOneAndUpdate({ Username: user.Username }, { $set: { isLogged: true } }, { new: true });
-        const token = this.jwtService.sign({ Username: myUser?.Username, isLogged: myUser?.isLogged, id: myUser?.id });
-        return { token, Username: myUser?.Username, isLogged: myUser?.isLogged };
+        const token = this.jwtService.sign({
+            Username: myUser?.Username,
+            isLogged: myUser?.isLogged,
+            id: myUser?.id,
+        });
+        const RefreshToken = (0, crypto_1.randomUUID)();
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 3);
+        await this.RefreshTokenModel.create(Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }));
+        return {
+            token,
+            Username: myUser?.Username,
+            isLogged: myUser?.isLogged,
+            RefreshToken,
+        };
     }
     async getuserName(id) {
-        return await this.UserModel.findById(id.id).select("Username");
+        return await this.UserModel.findById(id.id).select('Username');
+    }
+    async refreshToken(refreshToken) {
+        const refresh = await this.RefreshTokenModel.findOneAndDelete({
+            RefreshToken: refreshToken,
+            expiryDate: { $gte: new Date() },
+        });
+        if (!refresh)
+            throw new common_1.UnauthorizedException('refresh token is invalid');
+        const myUser = await this.UserModel.findOne({
+            _id: refresh.userId,
+        });
+        const token = this.jwtService.sign({
+            Username: myUser?.Username,
+            isLogged: myUser?.isLogged,
+            id: myUser?.id,
+        });
+        const RefreshToken = (0, crypto_1.randomUUID)();
+        const expiryDate = new Date();
+        expiryDate.setMinutes(expiryDate.getDate() + 5);
+        await this.RefreshTokenModel.create(Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }));
+        return { token, RefreshToken };
     }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_2.InjectModel)(User_schemas_1.User.name)),
-    __metadata("design:paramtypes", [mongoose_1.Model, jwt_1.JwtService])
+    __param(1, (0, mongoose_2.InjectModel)(refresh_token_schemas_1.RefreshToken.name)),
+    __metadata("design:paramtypes", [mongoose_1.Model,
+        mongoose_1.Model,
+        jwt_1.JwtService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

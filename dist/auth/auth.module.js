@@ -15,6 +15,7 @@ const User_schemas_1 = require("./schema/User.schemas");
 const passport_1 = require("@nestjs/passport");
 const jwt_1 = require("@nestjs/jwt");
 const jwt_strategy_1 = require("./jwt.strategy");
+const refresh_token_schemas_1 = require("./schema/refresh-token.schemas");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -26,12 +27,16 @@ exports.AuthModule = AuthModule = __decorate([
             mongoose_1.MongooseModule.forFeature([{
                     name: User_schemas_1.User.name,
                     schema: User_schemas_1.UserSchema
+                },
+                {
+                    name: refresh_token_schemas_1.RefreshToken.name,
+                    schema: refresh_token_schemas_1.RefreshTokenSchema
                 }]),
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.registerAsync({
                 useFactory: () => ({
                     secret: 'SoSecret',
-                    signOptions: { expiresIn: '1d' }
+                    signOptions: { expiresIn: '1m' }
                 })
             })
         ],
