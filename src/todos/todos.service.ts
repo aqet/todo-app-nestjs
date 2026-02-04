@@ -7,12 +7,16 @@ import { Model } from 'mongoose';
 import { title } from 'process';
 import { use } from 'passport';
 import { User } from 'src/auth/schema/User.schemas';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class TodosService {
-  todos:any=[]
+  todos: any = [];
 
-  constructor(@InjectModel(Todo.name) private TodoModel: Model<Todo>) {}
+  constructor(
+    @InjectModel(Todo.name) private TodoModel: Model<Todo>,
+    private readonly mailservice: MailService,
+  ) {}
 
   initialisationTodo(initTodo: CreateTodoDto) {
     const init = new this.TodoModel(initTodo);
@@ -27,26 +31,36 @@ export class TodosService {
     return this.TodoModel.findOne({ name: name });
   }
 
-  createTodo(createTodoDto: any, user: User) {
+  async createTodo(createTodoDto: any, user: User) {
     // const updatetodo = {this.todos}
 
     const data = Object.assign({
-      name: createTodoDto.task,
+      name: createTodoDto.info.task,
       date: new Date(),
       update: new Date(),
       user: user._id,
     });
     console.log(data);
-    
-    return this.TodoModel.findOneAndUpdate(
+
+    const todo = await this.TodoModel.findOneAndUpdate(
       { title: 'A faire' },
       {
         $push: {
           tasks: data,
-        }
+        },
       },
-      {new: true}
+      { new: true },
     );
+
+    if (!todo) {
+      throw new Error('Todo non trouvé');
+    }
+
+    await this.mailservice.sendEmail({
+      to: createTodoDto.info.mail,
+      username: createTodoDto.info.user,
+      title: createTodoDto.info.task,
+    }, 'task-created');
   }
 
   // findOne(id: string): Todo | undefined {
@@ -62,12 +76,29 @@ export class TodosService {
   }
 
   async update(todo: any) {
-    this.delete(todo.last, todo.task.name).then(() => {
+    const updatetodo = await this.delete(todo.last, todo.task.name).then(() => {
       return this.TodoModel.findOneAndUpdate(
         { title: todo.next },
-        { $push: { tasks: { name: todo.task.name, date: todo.task.date, update: new Date(), user: todo.task.user } } },
+        {
+          $push: {
+            tasks: {
+              name: todo.task.name,
+              date: todo.task.date,
+              update: new Date(),
+              user: todo.task.user,
+            },
+          },
+        },
       );
     });
+
+    await this.mailservice.sendEmail({
+      to: todo.mail,
+      username: todo.user,
+      title: todo.task.name,
+      last: todo.last,
+      next: todo.next,
+    }, 'task-update');
 
     // this.getOne(todo.next).then(()=>{
     //     return this.TodoModel.findOneAndUpdate({title: todo.title}, {$push: {tasks: {name: todo.task.name, update: new Date()}}})

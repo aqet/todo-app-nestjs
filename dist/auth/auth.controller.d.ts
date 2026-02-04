@@ -6,6 +6,7 @@ export declare class AuthController {
     register(user: UserDto): Promise<{
         token: string;
         Username: string;
+        Mail: string;
         isLogged: boolean;
         RefreshToken: `${string}-${string}-${string}-${string}-${string}`;
     }>;
@@ -22,6 +23,7 @@ export declare class AuthController {
     }): Promise<{
         token: string;
         Username: string | undefined;
+        Mail: string | undefined;
         isLogged: boolean | undefined;
         RefreshToken: `${string}-${string}-${string}-${string}-${string}`;
     }>;

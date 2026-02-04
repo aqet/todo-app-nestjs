@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './schema/refresh-token.schemas';
 import { randomUUID } from 'crypto';
+import { MailService } from 'src/mail/mail.service';
 @Injectable()
 export class AuthService {
   constructor(
@@ -14,6 +15,7 @@ export class AuthService {
     @InjectModel(RefreshToken.name)
     private RefreshTokenModel: Model<RefreshToken>,
     private jwtService: JwtService,
+    private readonly mailservice: MailService,
   ) {}
   user: UserDto[] = [];
 
@@ -37,13 +39,21 @@ export class AuthService {
       Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }),
     );
 
+    await this.mailservice.sendEmail({
+      to: myUser.email,
+      username: myUser.Username
+    }, 'welcome');
+
     // this.user.push(user)
     return {
       token,
       Username: myUser.Username,
+      Mail: myUser.email,
       isLogged: myUser.isLogged,
       RefreshToken,
     };
+
+    
   }
 
   async logout(user: any) {
@@ -92,13 +102,14 @@ export class AuthService {
     return {
       token,
       Username: myUser?.Username,
+      Mail: myUser?.email,
       isLogged: myUser?.isLogged,
       RefreshToken,
     };
   }
 
   async getuserName(id: any) {
-    return await this.UserModel.findById(id.id).select('Username');
+    return await this.UserModel.findById(id.id).select('-_id');
   }
 
   async refreshToken(refreshToken: string) {

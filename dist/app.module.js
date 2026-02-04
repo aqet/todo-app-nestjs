@@ -13,12 +13,13 @@ const app_service_1 = require("./app.service");
 const todos_module_1 = require("./todos/todos.module");
 const auth_module_1 = require("./auth/auth.module");
 const mongoose_1 = require("@nestjs/mongoose");
+const mail_module_1 = require("./mail/mail.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [todos_module_1.TodosModule, auth_module_1.AuthModule, mongoose_1.MongooseModule.forRoot('mongodb+srv://tientcheuigorcarel_db_user:YN7LNCRCvOfe6vHd@cluster0.wy05bqi.mongodb.net/')],
+        imports: [todos_module_1.TodosModule, auth_module_1.AuthModule, mongoose_1.MongooseModule.forRoot('mongodb+srv://tientcheuigorcarel_db_user:YN7LNCRCvOfe6vHd@cluster0.wy05bqi.mongodb.net/'), mail_module_1.MailModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

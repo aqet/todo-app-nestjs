@@ -54,14 +54,17 @@ const bcrypt = __importStar(require("bcrypt"));
 const jwt_1 = require("@nestjs/jwt");
 const refresh_token_schemas_1 = require("./schema/refresh-token.schemas");
 const crypto_1 = require("crypto");
+const mail_service_1 = require("../mail/mail.service");
 let AuthService = class AuthService {
     UserModel;
     RefreshTokenModel;
     jwtService;
-    constructor(UserModel, RefreshTokenModel, jwtService) {
+    mailservice;
+    constructor(UserModel, RefreshTokenModel, jwtService, mailservice) {
         this.UserModel = UserModel;
         this.RefreshTokenModel = RefreshTokenModel;
         this.jwtService = jwtService;
+        this.mailservice = mailservice;
     }
     user = [];
     async register(user) {
@@ -78,9 +81,14 @@ let AuthService = class AuthService {
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + 3);
         await this.RefreshTokenModel.create(Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }));
+        await this.mailservice.sendEmail({
+            to: myUser.email,
+            username: myUser.Username
+        }, 'welcome');
         return {
             token,
             Username: myUser.Username,
+            Mail: myUser.email,
             isLogged: myUser.isLogged,
             RefreshToken,
         };
@@ -110,12 +118,13 @@ let AuthService = class AuthService {
         return {
             token,
             Username: myUser?.Username,
+            Mail: myUser?.email,
             isLogged: myUser?.isLogged,
             RefreshToken,
         };
     }
     async getuserName(id) {
-        return await this.UserModel.findById(id.id).select('Username');
+        return await this.UserModel.findById(id.id).select('-_id');
     }
     async refreshToken(refreshToken) {
         const refresh = await this.RefreshTokenModel.findOneAndDelete({
@@ -146,6 +155,7 @@ exports.AuthService = AuthService = __decorate([
     __param(1, (0, mongoose_2.InjectModel)(refresh_token_schemas_1.RefreshToken.name)),
     __metadata("design:paramtypes", [mongoose_1.Model,
         mongoose_1.Model,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        mail_service_1.MailService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

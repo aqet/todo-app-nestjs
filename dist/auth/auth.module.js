@@ -16,6 +16,7 @@ const passport_1 = require("@nestjs/passport");
 const jwt_1 = require("@nestjs/jwt");
 const jwt_strategy_1 = require("./jwt.strategy");
 const refresh_token_schemas_1 = require("./schema/refresh-token.schemas");
+const mail_module_1 = require("../mail/mail.module");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -24,6 +25,7 @@ exports.AuthModule = AuthModule = __decorate([
         controllers: [auth_controller_1.AuthController],
         providers: [auth_service_1.AuthService, jwt_strategy_1.jwtStrategy],
         imports: [
+            mail_module_1.MailModule,
             mongoose_1.MongooseModule.forFeature([{
                     name: User_schemas_1.User.name,
                     schema: User_schemas_1.UserSchema
@@ -36,7 +38,7 @@ exports.AuthModule = AuthModule = __decorate([
             jwt_1.JwtModule.registerAsync({
                 useFactory: () => ({
                     secret: 'SoSecret',
-                    signOptions: { expiresIn: '1m' }
+                    signOptions: { expiresIn: '10m' }
                 })
             })
         ],

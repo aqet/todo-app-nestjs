@@ -13,6 +13,7 @@ const todos_service_1 = require("./todos.service");
 const mongoose_1 = require("@nestjs/mongoose");
 const Todo_schemas_1 = require("./schemas/Todo.schemas");
 const auth_module_1 = require("../auth/auth.module");
+const mail_module_1 = require("../mail/mail.module");
 let TodosModule = class TodosModule {
 };
 exports.TodosModule = TodosModule;
@@ -21,6 +22,7 @@ exports.TodosModule = TodosModule = __decorate([
         controllers: [todos_controller_1.TodosController],
         providers: [todos_service_1.TodosService],
         imports: [
+            mail_module_1.MailModule,
             auth_module_1.AuthModule,
             mongoose_1.MongooseModule.forFeature([{
                     name: Todo_schemas_1.Todo.name,

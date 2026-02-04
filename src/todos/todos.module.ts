@@ -4,11 +4,13 @@ import { TodosService } from './todos.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Todo, TodoSchema } from './schemas/Todo.schemas';
 import { AuthModule } from 'src/auth/auth.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   controllers: [TodosController],
   providers: [TodosService],
   imports: [
+    MailModule,
     AuthModule,
     MongooseModule.forFeature([{
       name: Todo.name,

@@ -3,15 +3,18 @@ import { User } from './schema/User.schemas';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './schema/refresh-token.schemas';
+import { MailService } from 'src/mail/mail.service';
 export declare class AuthService {
     private UserModel;
     private RefreshTokenModel;
     private jwtService;
-    constructor(UserModel: Model<User>, RefreshTokenModel: Model<RefreshToken>, jwtService: JwtService);
+    private readonly mailservice;
+    constructor(UserModel: Model<User>, RefreshTokenModel: Model<RefreshToken>, jwtService: JwtService, mailservice: MailService);
     user: UserDto[];
     register(user: UserDto): Promise<{
         token: string;
         Username: string;
+        Mail: string;
         isLogged: boolean;
         RefreshToken: `${string}-${string}-${string}-${string}-${string}`;
     }>;
@@ -23,6 +26,7 @@ export declare class AuthService {
     login(user: any): Promise<{
         token: string;
         Username: string | undefined;
+        Mail: string | undefined;
         isLogged: boolean | undefined;
         RefreshToken: `${string}-${string}-${string}-${string}-${string}`;
     }>;

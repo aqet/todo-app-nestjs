@@ -7,11 +7,14 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtStrategy } from './jwt.strategy';
 import { RefreshToken, RefreshTokenSchema } from './schema/refresh-token.schemas';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, jwtStrategy],
   imports: [
+    MailModule,
+    
     MongooseModule.forFeature([{
       name: User.name,
       schema: UserSchema
@@ -25,7 +28,7 @@ import { RefreshToken, RefreshTokenSchema } from './schema/refresh-token.schemas
       // inject: [ConfigService]
       useFactory: () => ({
         secret: 'SoSecret',
-        signOptions: {expiresIn: '1m'}
+        signOptions: {expiresIn: '10m'}
       })
       
     })
