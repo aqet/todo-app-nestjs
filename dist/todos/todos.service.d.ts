@@ -13,6 +13,7 @@ export declare class TodosService {
     } & {
         __v: number;
     }>;
+    ensureColumnsExist(): Promise<void>;
     getAllTodos(): import("mongoose").Query<(import("mongoose").Document<unknown, {}, Todo, {}, {}> & Todo & {
         _id: import("mongoose").Types.ObjectId;
     } & {
@@ -34,7 +35,7 @@ export declare class TodosService {
     createTodo(createTodoDto: any, user: User): Promise<void>;
     create(newTodo: any): any;
     update(todo: any): Promise<void>;
-    delete(title: string, taskName: string): import("mongoose").Query<(import("mongoose").Document<unknown, {}, Todo, {}, {}> & Todo & {
+    delete(title: string, taskId: string): import("mongoose").Query<(import("mongoose").Document<unknown, {}, Todo, {}, {}> & Todo & {
         _id: import("mongoose").Types.ObjectId;
     } & {
         __v: number;

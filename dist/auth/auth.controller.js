@@ -17,6 +17,9 @@ const common_1 = require("@nestjs/common");
 const user_dto_1 = require("./dto/user.dto");
 const auth_service_1 = require("./auth.service");
 const passport_1 = require("@nestjs/passport");
+const platform_express_1 = require("@nestjs/platform-express");
+const multer_1 = require("multer");
+const path_1 = require("path");
 let AuthController = class AuthController {
     authservice;
     constructor(authservice) {
@@ -37,6 +40,23 @@ let AuthController = class AuthController {
     refreshToken(token) {
         console.log(token.token);
         return this.authservice.refreshToken(token.token);
+    }
+    getMe(req) {
+        return req.user;
+    }
+    uploadImage(Username, file) {
+        console.log({
+            "username": Username.Username,
+            "file": file
+        });
+        const user = {
+            Username: Username.Username,
+            imageUrl: `/uploads/${file.filename}`
+        };
+        return this.authservice.updateProfile(user);
+    }
+    update(body) {
+        return this.authservice.updateProfile(body['user']);
     }
 };
 exports.AuthController = AuthController;
@@ -76,6 +96,45 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "refreshToken", null);
+__decorate([
+    (0, common_1.Get)('me'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)()),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "getMe", null);
+__decorate([
+    (0, common_1.Post)('update-photo'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('image', {
+        storage: (0, multer_1.diskStorage)({
+            destination: './uploads',
+            filename: (req, file, cb) => {
+                const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                cb(null, uniqueName + (0, path_1.extname)(file.originalname));
+            },
+        }),
+        fileFilter: (req, file, cb) => {
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+                return cb(new Error('Seules les images sont autorisées!'), false);
+            }
+            cb(null, true);
+        },
+        limits: { fileSize: 2 * 1024 * 1024 },
+    })),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "uploadImage", null);
+__decorate([
+    (0, common_1.Post)('update'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "update", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

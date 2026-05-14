@@ -35,8 +35,8 @@ let TodosController = class TodosController {
     update(todo) {
         return this.todosService.update(todo);
     }
-    delete(title, taskName) {
-        return this.todosService.delete(title, taskName);
+    delete(title, taskId) {
+        return this.todosService.delete(title, taskId);
     }
 };
 exports.TodosController = TodosController;
@@ -72,10 +72,10 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], TodosController.prototype, "update", null);
 __decorate([
-    (0, common_1.Delete)(":title/task/:taskName"),
+    (0, common_1.Delete)(":title/task/:taskId"),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)()),
     __param(0, (0, common_1.Param)('title')),
-    __param(1, (0, common_1.Param)('taskName')),
+    __param(1, (0, common_1.Param)('taskId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)

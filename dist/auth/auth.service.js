@@ -70,6 +70,7 @@ let AuthService = class AuthService {
     async register(user) {
         const salt = await bcrypt.genSalt();
         user.password = await bcrypt.hash(user.password, salt);
+        user.imageUrl = '';
         const newUser = new this.UserModel(user);
         const myUser = await newUser.save();
         const token = this.jwtService.sign({
@@ -87,9 +88,13 @@ let AuthService = class AuthService {
         }, 'welcome');
         return {
             token,
+            id: myUser.id,
             Username: myUser.Username,
             Mail: myUser.email,
             isLogged: myUser.isLogged,
+            imageUrl: myUser.imageUrl || '',
+            createdAt: myUser.createdAt,
+            updatedAt: myUser.updatedAt,
             RefreshToken,
         };
     }
@@ -117,9 +122,13 @@ let AuthService = class AuthService {
         await this.RefreshTokenModel.create(Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }));
         return {
             token,
+            id: myUser?.id,
             Username: myUser?.Username,
             Mail: myUser?.email,
             isLogged: myUser?.isLogged,
+            imageUrl: myUser?.imageUrl || '',
+            createdAt: myUser?.createdAt,
+            updatedAt: myUser?.updatedAt,
             RefreshToken,
         };
     }
@@ -146,6 +155,14 @@ let AuthService = class AuthService {
         expiryDate.setMinutes(expiryDate.getDate() + 5);
         await this.RefreshTokenModel.create(Object.assign({ RefreshToken, userId: myUser?._id, expiryDate }));
         return { token, RefreshToken };
+    }
+    updateProfile(user) {
+        console.log(user);
+        return this.UserModel.findOneAndUpdate({ Username: user.Username }, {
+            $set: {
+                imageUrl: user.imageUrl
+            }
+        }, { new: true });
     }
 };
 exports.AuthService = AuthService;

@@ -30,6 +30,19 @@ let TodosService = class TodosService {
         const init = new this.TodoModel(initTodo);
         return init.save();
     }
+    async ensureColumnsExist() {
+        const columns = ['A faire', 'En cours', 'Terminé'];
+        for (const columnTitle of columns) {
+            const exists = await this.TodoModel.findOne({ title: columnTitle });
+            if (!exists) {
+                await this.TodoModel.create({
+                    title: columnTitle,
+                    tasks: [],
+                });
+                console.log(`✅ Colonne "${columnTitle}" créée`);
+            }
+        }
+    }
     getAllTodos() {
         return this.TodoModel.find();
     }
@@ -44,6 +57,7 @@ let TodosService = class TodosService {
             user: user._id,
         });
         console.log(data);
+        await this.ensureColumnsExist();
         const todo = await this.TodoModel.findOneAndUpdate({ title: 'A faire' }, {
             $push: {
                 tasks: data,
@@ -83,8 +97,8 @@ let TodosService = class TodosService {
             next: todo.next,
         }, 'task-update');
     }
-    delete(title, taskName) {
-        return this.TodoModel.findOneAndUpdate({ title: title }, { $pull: { tasks: { name: taskName } } }, { new: true });
+    delete(title, taskId) {
+        return this.TodoModel.findOneAndUpdate({ title: title }, { $pull: { tasks: { _id: taskId } } }, { new: true });
     }
 };
 exports.TodosService = TodosService;

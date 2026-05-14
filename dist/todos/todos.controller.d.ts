@@ -19,7 +19,7 @@ export declare class TodosController {
     }, {}, import("./schemas/Todo.schemas").Todo, "find", {}>;
     createTodo(newTodo: any, req: any): Promise<void>;
     update(todo: CreateTodoDto[]): Promise<void>;
-    delete(title: any, taskName: any): import("mongoose").Query<(import("mongoose").Document<unknown, {}, import("./schemas/Todo.schemas").Todo, {}, {}> & import("./schemas/Todo.schemas").Todo & {
+    delete(title: any, taskId: any): import("mongoose").Query<(import("mongoose").Document<unknown, {}, import("./schemas/Todo.schemas").Todo, {}, {}> & import("./schemas/Todo.schemas").Todo & {
         _id: import("mongoose").Types.ObjectId;
     } & {
         __v: number;

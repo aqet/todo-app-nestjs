@@ -18,6 +18,7 @@ let User = class User extends mongoose_3.Document {
     email;
     password;
     isLogged;
+    imageUrl;
 };
 exports.User = User;
 __decorate([
@@ -36,6 +37,10 @@ __decorate([
     (0, mongoose_1.Prop)({ default: true }),
     __metadata("design:type", Boolean)
 ], User.prototype, "isLogged", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], User.prototype, "imageUrl", void 0);
 exports.User = User = __decorate([
     (0, mongoose_1.Schema)({ timestamps: true })
 ], User);

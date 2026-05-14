@@ -14,4 +14,8 @@ export class UserDto{
     @IsOptional()
     @IsBoolean()
     isLogged: boolean;
+
+    @IsOptional()
+    @IsString()
+    imageUrl: string
 } 

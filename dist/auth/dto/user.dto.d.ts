@@ -3,4 +3,5 @@ export declare class UserDto {
     Username: string;
     password: string;
     isLogged: boolean;
+    imageUrl: string;
 }

@@ -17,6 +17,9 @@ export class User extends Document{
 
     @Prop({default: true})
     isLogged: boolean;
+
+    @Prop()
+    imageUrl: string
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

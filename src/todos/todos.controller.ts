@@ -42,9 +42,9 @@ export class TodosController {
         return this.todosService.update(todo);
     }
 
-    @Delete(":title/task/:taskName")
+    @Delete(":title/task/:taskId")
     @UseGuards(AuthGuard())
-    delete(@Param('title') title, @Param('taskName') taskName){
-        return this.todosService.delete(title, taskName);
+    delete(@Param('title') title, @Param('taskId') taskId){
+        return this.todosService.delete(title, taskId);
     }
 }

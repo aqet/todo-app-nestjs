@@ -23,6 +23,22 @@ export class TodosService {
     return init.save();
   }
 
+  async ensureColumnsExist() {
+    const columns = ['A faire', 'En cours', 'Terminé'];
+    
+    for (const columnTitle of columns) {
+      const exists = await this.TodoModel.findOne({ title: columnTitle });
+      
+      if (!exists) {
+        await this.TodoModel.create({
+          title: columnTitle,
+          tasks: [],
+        });
+        console.log(`✅ Colonne "${columnTitle}" créée`);
+      }
+    }
+  }
+
   getAllTodos() {
     return this.TodoModel.find();
   }
@@ -41,6 +57,9 @@ export class TodosService {
       user: user._id,
     });
     console.log(data);
+
+    // Vérifier et créer les colonnes si elles n'existent pas
+    await this.ensureColumnsExist();
 
     const todo = await this.TodoModel.findOneAndUpdate(
       { title: 'A faire' },
@@ -105,10 +124,10 @@ export class TodosService {
     // })
   }
 
-  delete(title: string, taskName: string) {
+  delete(title: string, taskId: string) {
     return this.TodoModel.findOneAndUpdate(
       { title: title },
-      { $pull: { tasks: { name: taskName } } },
+      { $pull: { tasks: { _id: taskId } } },
       { new: true },
     );
   }

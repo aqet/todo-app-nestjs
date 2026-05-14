@@ -16,6 +16,7 @@ class UserDto {
     Username;
     password;
     isLogged;
+    imageUrl;
 }
 exports.UserDto = UserDto;
 __decorate([
@@ -36,4 +37,9 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], UserDto.prototype, "isLogged", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UserDto.prototype, "imageUrl", void 0);
 //# sourceMappingURL=user.dto.js.map
